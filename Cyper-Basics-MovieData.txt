@@ -1,0 +1,86 @@
+//Viewing first 5 nodes
+MATCH (z) RETURN z LIMIT 5
+
+// (): represents "Node"
+MATCH (anyone:Person) RETURN anyone LIMIT 5
+
+// (node1)--(node2) represents relationship between nodes
+// In order to represent the relation we need to insert "[]" to "--" operator
+// In order to represent the direction of the relation we need to insert ">" to "-" operator
+// In order to filter the relation based on a relation label we need to specify it in [rel:LABEL]
+// In order to filter the nodes we need to specify labels in (node1:LABEL)
+// In order to add more relation labels we need to insert it in [rel: LABEL1 |& LABEL2]
+MATCH (node1:Person)-[rel:ACTED_IN | DIRECTED]->(node2:Movie) 
+RETURN node1,rel,node2 
+LIMIT 10
+    
+// Movie titles in which actors also directed the movie
+MATCH (movie:Movie)
+MATCH (director:Person)-[:DIRECTED]->(movie)
+MATCH (director:Person)-[:ACTED_IN]->(movie)
+return movie.title, director.name
+LIMIT 10
+       
+// Nested Contact List
+// In order to avoid contacts with themselves we insert <> operators to where clause
+MATCH (node1:Person)-[:HAS_CONTACT]->(node2:Person)
+MATCH (node2:Person)-[:HAS_CONTACT]->(node3:Person)
+WHERE node1 <> node3 and node1<>node2 and node2<>node3
+RETURN node1.name,node2.name,node3.name
+LIMIT 1
+    
+// All contacts whether they directed a movie
+MATCH (person1:Person)-[:HAS_CONTACT]->(person2:Person)
+OPTIONAL MATCH  (person2:Person)-[:DIRECTED]->(movie)
+return person1.name, person2.name,movie.title
+LIMIT 100
+    
+// All movie titles with director.name column shows whether the actor and the director is the same with actor name
+// Optional Match works same as left outer join
+MATCH (movie:Movie)
+OPTIONAL MATCH  (director:Person)-[:DIRECTED]->(movie)<-[:ACTED_IN]-(director)
+return movie.title, director.name
+LIMIT 100
+    
+// Filtering Nodes - 1: Filtering in Match
+MATCH (person:Person{name:'Tom Hanks',born:1956})
+RETURN person
+LIMIT 1
+                      
+// Filtering Nodes: 2 - Where Clause
+MATCH (person:Person)
+WHERE person.name = 'Tom Hanks' and person.born = 1956
+RETURN person
+LIMIT 1
+    
+// Filtering Nodes: 3 - Comparsion Operators
+MATCH (person:Person)
+WHERE person.born >= 1956 and person.born <= 1986
+RETURN person.name
+LIMIT 5
+    
+// Filtering Nodes - 4: Boolean Operators
+MATCH (person:Person)
+WHERE (person.born in [1957,1958] or person.born >= 1986) and NOT person.born in [1957]
+RETURN person.name
+    
+// Filtering Nodes - 5: Using nodes in where clause
+// Filtering only the acted persons
+MATCH (person:Person)-->(movie:Movie)
+WHERE movie.title = 'Unforgiven' and NOT (person)-[:DIRECTED]->(movie)
+RETURN person, movie
+                                                                
+// Filtering Nodes - 6: Regular Expressions
+// The.* filters starting with The
+// *.The filters finishing with The
+// (?i) makes the filter incase sensitive
+MATCH (movie:Movie)
+WHERE movie.title =~ '(?i).*The.*'
+RETURN movie.title
+    
+// Filtering Nodes - 7: Order By
+MATCH (actor:Person)-[role:ACTED_IN]->(movie:Movie)
+WHERE movie.title = 'Top Gun'
+RETURN actor.name as Name, role.earnings as Earnings
+ORDER BY role.earnings DESC
+LIMIT 3    

@@ -1,5 +1,0 @@
-Graph is a collection of 'Nodes' and 'Relationships'. There can be relationships between nodes for examples node named 'Person' can own a 'Car'. So this creates a relationship between 'Person' node to 'Car' node.
-Properties are Key-Value paris on a Node / Relationship. Neo4j does not support nested properties.
-	Example:	{
-				name:'George Clooney'
-			}
