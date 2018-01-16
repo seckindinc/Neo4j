@@ -84,3 +84,86 @@ WHERE movie.title = 'Top Gun'
 RETURN actor.name as Name, role.earnings as Earnings
 ORDER BY role.earnings DESC
 LIMIT 3    
+
+// String Functions - 1: toString
+RETURN toString(10),toString("String")
+
+// String Functions - 2: Trim
+RETURN trim("  ABC  ")
+
+// String Functions - 3: Replace
+RETURN replace("Hello","l","r")
+
+// String Functions - 4:ToUpper
+RETURN toUpper("abc")
+
+// Math Functions - 1: Floor
+RETURN floor(2.232323)
+
+// Math Functions - 2: Ceil
+RETURN ceil(2.232323232)
+
+//Aggregation Functions
+MATCH (person:Person{name: 'Tom Hanks'})-[role:ACTED_IN]->(movie:Movie)
+RETURN count(person) as Acted_Count, person.name, sum(role.earnings) as Total_Earnt, avg(role.earnings) as Avg_Earnt,
+min(role.earnings) as Min_Earnt, max(role.earnings) as Max_Earnt
+
+// Find all Tom Hank's contacts that were born in 1960 or later and have earnt over 10m from a single movie
+// Order the results by the highest paid actors first. label the columns 'ContactName' and 'Born'
+MATCH (person1:Person)-[:HAS_CONTACT]->(person2:Person)
+MATCH (person2:Person)-[role:ACTED_IN]->(movie:Movie)
+WHERE person1.name = 'Tom Hanks' and person2.born >= 1960 and role.earnings > 10000000
+RETURN person2.name as ContactName,person2.born as Born,role.earnings
+ORDER BY role.earnings DESC
+
+// Find the actor with the highest average earnings. Round their earnings and display Actor's name in uppercase
+MATCH (person:Person)-[role:ACTED_IN]->(movie:Movie)
+RETURN round(avg(role.earnings)) as Avg_Earnt, ToUpper(person.name) as Name
+ORDER BY round(avg(role.earnings)) DESC
+LIMIT 1
+
+// Creating Node, Label and Property
+CREATE (cat:Cat:Animal{sound:"Meow", eats:"Birds"})
+RETURN cat
+
+// Creating node and adding relationship
+CREATE (cat:Cat{name:"Sutlac"})-[:GROOMS{period: 'Daily'}]->(cat)
+
+// Adding Hateful Eight Movie to database with director Quentin Tarantino
+// First checking whether movie exists or not
+// MATCH (movie:Movie)
+// WHERE movie.title =~ '(?i)the hateful eight'
+// RETURN movie
+CREATE (movie:Movie{title: 'The Hateful Eight'}),
+(quentin:Person{name: 'Quentin Tarantino'}),
+(quentin)-[:DIRECTED]->(movie)
+RETURN quentin,movie
+
+// Adding Hateful Eight Movie to database with director Quentin Tarantino
+// First checking whether movie exists or not
+// MATCH (movie:Movie)
+// WHERE movie.title =~ '(?i)the hateful eight'
+// RETURN movie
+CREATE (movie:Movie{title: 'The Hateful Eight'}),
+(quentin:Person{name: 'Quentin Tarantino'}),
+(quentin)-[:DIRECTED]->(movie)
+RETURN quentin,movie
+
+// Adding Zoe Bell as Quentin Tarantino's contact who played in movie and earned 1m$
+// MATCH (person:Person)
+// WHERE person.name =~ '(?i).*zoe bell.*'
+// RETURN person
+CREATE (zoe_bell:Person{name: 'Zoe Bell', born: 1978})
+MATCH (zoe_bell:Person{name: 'Zoe Bell'}), (quentin:Person{name: 'Quetin Tarantino'}), (movie:Movie{title:'The Hateful Eight'})
+CREATE (quentin)-[:HAS_CONTACT]->(zoe_bell), (zoe_bell)-[:ACTED_IN{earnings:1000000}]->(movie)
+RETURN zoe_bell,quentin,movie
+
+// Deleting nodes: To delete the nodes first we need to delete the relationships.
+// This code deletes all nodes and relationships in database
+MATCH (node)-[rel]-()
+DELETE node,rel
+// To delete nodes with relationships
+MATCH (node)
+DETACH DELETE node
+
+
